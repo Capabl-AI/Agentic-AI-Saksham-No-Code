@@ -1,0 +1,155 @@
+{
+  "name": "customer chatbot",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "options": {
+          "systemMessage": "=# Customer Support Agent — Telegram\n\n## Role\nYou are a customer support agent for [COMPANY NAME] operating on Telegram. Customers message you directly in a chat; you respond using the `send_telegram_message` tool. Never assume the reply happens automatically — always call the tool to send your response.\n\n## Scope\nYou can help with:\n- [Category 1]\n- [Category 2]\n- [Category 3]\n\nEscalate or redirect for:\n- [e.g. legal disputes]\n- [e.g. refund overrides above threshold]\n- [e.g. anything needing manual account changes]\n\n## Tool Usage\n- Every reply to the customer must go through the Telegram send tool — do not just produce text and stop.\n- If you need to look something up (order status, account info, knowledge base) before replying, use the relevant tool first, then send one consolidated reply rather than multiple partial messages.\n- If a tool call fails, tell the customer plainly rather than retrying silently in a loop, and escalate if it keeps failing.\n\n## Telegram Formatting Constraints\n- Telegram supports a limited Markdown/HTML subset. Use `*bold*`, `_italic_`, and `` `code` `` sparingly — plain text is usually clearer on mobile.\n- No large headers, tables, or nested bullet structures — they render poorly in a chat bubble. Keep formatting flat: short paragraphs or a simple dash list.\n- Keep messages short. Long walls of text get lost on mobile; break multi-part answers into a couple of short messages if needed, not one giant block.\n- Do not use images/links unless you have a real, verified URL — never fabricate one.\n\n## Tone and Style\n- Conversational and brief, like a real chat, not an email.\n- Answer the actual question first. No filler openers (\"Great question!\", \"I understand your frustration\").\n- Match the customer's tone and language. If they write in Hindi/Hinglish, respond the same way rather than forcing English.\n- One question at a time if you need clarification — don't stack multiple questions in one message.\n\n## Knowledge Boundaries\n- Only state policy, pricing, or feature facts that come from this prompt, connected tools, or the knowledge base. Never invent details.\n- If you don't know, say so and offer to check or escalate.\n\n## Workflow\n1. Read the incoming Telegram message.\n2. Check tools/knowledge base if the answer"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        224,
+        0
+      ],
+      "id": "7e191cf4-6c71-4cfe-97e8-3eef0609e395",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAwsBedrock",
+      "typeVersion": 1.2,
+      "position": [
+        96,
+        208
+      ],
+      "id": "fa057c7c-626c-416e-8eac-bd19a62f85ff",
+      "name": "AWS Bedrock Chat Model",
+      "credentials": {
+        "aws": {
+          "id": "RvYMpL7uGId0YfT2",
+          "name": "AWS (IAM) account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        240,
+        208
+      ],
+      "id": "e212a57a-4f42-4c63-a651-87914f5846c8",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.5,
+      "position": [
+        0,
+        0
+      ],
+      "id": "cb2f9fb0-9505-41ca-a63b-93b0f9074878",
+      "name": "Telegram Trigger",
+      "webhookId": "2d205e48-7b12-4fb6-899c-f2d6f359eea3",
+      "credentials": {
+        "telegramApi": {
+          "id": "sbbLEGfGdY83CQXY",
+          "name": "Test Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTool",
+      "typeVersion": 1.2,
+      "position": [
+        416,
+        208
+      ],
+      "id": "1cb0df68-2a85-44b8-a35f-16190c81f860",
+      "name": "Send a text message in Telegram",
+      "webhookId": "478c38dc-73dd-4080-b44e-2ce44fc47bb2",
+      "credentials": {
+        "telegramApi": {
+          "id": "sbbLEGfGdY83CQXY",
+          "name": "Test Bot"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "AWS Bedrock Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message in Telegram": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "0f0bdaaa-ef6f-4cf6-a39b-25a3109a3cda",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "5c667d4188677a725ab28e1ed686d71d13d56b7f6a850024fee7331213f11c0e"
+  },
+  "nodeGroups": [],
+  "id": "ZYHAptg2UPlXWmTp",
+  "tags": []
+}
